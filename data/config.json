@@ -1,0 +1,25 @@
+{
+  "calendar": {
+    "name": "GDESSA Barreiro",
+    "prodid": "-//GDESSA Barreiro//FPB Calendar//PT",
+    "timezone": "Europe/Lisbon",
+    "team_aliases": [
+      "GDESSA Barreiro",
+      "GDESSA"
+    ],
+    "include_competitions": [
+      {
+        "name": "Liga Betclic Feminina",
+        "url": "https://www.fpb.pt/calendario/11445/?competicao=11445"
+      },
+      {
+        "name": "Jogos de Preparação",
+        "url": "https://www.fpb.pt/calendario/11471/?competicao=11471"
+      },
+      {
+        "name": "GDESSA U18",
+        "url": "https://www.fpb.pt/equipa/equipa_63443/"
+      }
+    ]
+  }
+}
