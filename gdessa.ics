@@ -1,0 +1,229 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//GDESSA Barreiro//FPB Automatic Calendar//PT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:GDESSA Barreiro
+X-WR-TIMEZONE:Europe/Lisbon
+REFRESH-INTERVAL;VALUE=DURATION:P1D
+X-PUBLISHED-TTL:P1D
+BEGIN:VEVENT
+UID:c1ca7eb488159b439472@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261005T113000
+DTEND;TZID=Europe/Lisbon:20261005T133000
+SUMMARY:🏠 GDESSA Barreiro vs CRC Quinta dos Lombos
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413957
+END:VEVENT
+BEGIN:VEVENT
+UID:e380d2b7b6d89b22ef19@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261011T170000
+DTEND;TZID=Europe/Lisbon:20261011T190000
+SUMMARY:🏠 GDESSA Barreiro vs SC Coimbrões
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414030
+END:VEVENT
+BEGIN:VEVENT
+UID:ca0bedb742f6664f9c3f@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261018T150000
+DTEND;TZID=Europe/Lisbon:20261018T170000
+SUMMARY:🏠 GDESSA Barreiro vs Clube União Sportiva
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413967
+END:VEVENT
+BEGIN:VEVENT
+UID:9b579ec64bba3cb31276@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261025T173000
+DTEND;TZID=Europe/Lisbon:20261025T193000
+SUMMARY:🚌 BCBarcelos GIL VICENTE vs GDESSA Barreiro
+LOCATION:Esc Sec Barcelos \,Barcelos
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413973
+END:VEVENT
+BEGIN:VEVENT
+UID:b6c0c40c719a9f8553a7@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261101T150000
+DTEND;TZID=Europe/Lisbon:20261101T170000
+SUMMARY:🏠 GDESSA Barreiro vs Sanjoanense HELIOTEXTIL
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413981
+END:VEVENT
+BEGIN:VEVENT
+UID:9ac3ec989d7703ecf29e@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261107T113000
+DTEND;TZID=Europe/Lisbon:20261107T133000
+SUMMARY:🚌 Sporting CP vs GDESSA Barreiro
+LOCATION:Pavilhão João Rocha \,Lisboa
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413987
+END:VEVENT
+BEGIN:VEVENT
+UID:6b90be6e74f1f7930124@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261122T113000
+DTEND;TZID=Europe/Lisbon:20261122T133000
+SUMMARY:🏠 GDESSA Barreiro vs GDRAR
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413993
+END:VEVENT
+BEGIN:VEVENT
+UID:20eeb6c5b50214595793@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261129T113000
+DTEND;TZID=Europe/Lisbon:20261129T133000
+SUMMARY:🚌 SL Benfica vs GDESSA Barreiro
+LOCATION:Pavilhão Fidelidade \,Lisboa
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414000
+END:VEVENT
+BEGIN:VEVENT
+UID:c6370c1fadc354eb7f95@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261201T150000
+DTEND;TZID=Europe/Lisbon:20261201T170000
+SUMMARY:🏠 GDESSA Barreiro vs CDEFF HPM
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414001
+END:VEVENT
+BEGIN:VEVENT
+UID:50c7c1c46ad44e3db4c2@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261206T180000
+DTEND;TZID=Europe/Lisbon:20261206T200000
+SUMMARY:🏠 GDESSA Barreiro vs CAB Madeira
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414007
+END:VEVENT
+BEGIN:VEVENT
+UID:5025f67f6c04bde71d09@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261213T150000
+DTEND;TZID=Europe/Lisbon:20261213T170000
+SUMMARY:🏠 GDESSA Barreiro vs Esgueira Aveiro ECOVALOR
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414018
+END:VEVENT
+BEGIN:VEVENT
+UID:1d0c91ae2018c6e88bc8@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261220T114500
+DTEND;TZID=Europe/Lisbon:20261220T134500
+SUMMARY:🚌 CRC Quinta dos Lombos vs GDESSA Barreiro
+LOCATION:Pavilhão Desportivo dos Lombos \,Carcavelos
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414023
+END:VEVENT
+BEGIN:VEVENT
+UID:1372d902e51a04d030da@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20261230T211500
+DTEND;TZID=Europe/Lisbon:20261230T231500
+SUMMARY:🚌 SC Coimbrões vs GDESSA Barreiro
+LOCATION:Pavilhão Municipal de Coimbrões \,Vila Nova de Gaia
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413964
+END:VEVENT
+BEGIN:VEVENT
+UID:3b180159a45e6a24e336@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270104T201500
+DTEND;TZID=Europe/Lisbon:20270104T221500
+SUMMARY:🚌 Clube União Sportiva vs GDESSA Barreiro
+LOCATION:Pavilhão Desportivo Sidónio Serpa \,Ponta Delgada
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414033
+END:VEVENT
+BEGIN:VEVENT
+UID:ca19e033595887314a39@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270124T170000
+DTEND;TZID=Europe/Lisbon:20270124T190000
+SUMMARY:🏠 GDESSA Barreiro vs BCBarcelos GIL VICENTE
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414039
+END:VEVENT
+BEGIN:VEVENT
+UID:4406cf4f750c79e965ca@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270130T160000
+DTEND;TZID=Europe/Lisbon:20270130T180000
+SUMMARY:🚌 Sanjoanense HELIOTEXTIL vs GDESSA Barreiro
+LOCATION:Pavilhão Municipal Paulo Pinto \,São João da Madeira
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414047
+END:VEVENT
+BEGIN:VEVENT
+UID:d7cf7ceb53203a79f894@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270206T113000
+DTEND;TZID=Europe/Lisbon:20270206T133000
+SUMMARY:🏠 GDESSA Barreiro vs Sporting CP
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414053
+END:VEVENT
+BEGIN:VEVENT
+UID:9736d5282c983c02e7d8@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270220T180000
+DTEND;TZID=Europe/Lisbon:20270220T200000
+SUMMARY:🚌 GDRAR vs GDESSA Barreiro GDESSA Barreiro a indicar
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414059
+END:VEVENT
+BEGIN:VEVENT
+UID:fbf9e80cdaf20d3e7926@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270228T113000
+DTEND;TZID=Europe/Lisbon:20270228T133000
+SUMMARY:🏠 GDESSA Barreiro vs SL Benfica
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414066
+END:VEVENT
+BEGIN:VEVENT
+UID:86ef313784cb7de1403c@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270320T160000
+DTEND;TZID=Europe/Lisbon:20270320T180000
+SUMMARY:🚌 CDEFF HPM vs GDESSA Barreiro
+LOCATION:Pavilhão Francisco Franco \,-
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414067
+END:VEVENT
+BEGIN:VEVENT
+UID:f6c4b40d44d0a56d31ec@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270321T150000
+DTEND;TZID=Europe/Lisbon:20270321T170000
+SUMMARY:🚌 CAB Madeira vs GDESSA Barreiro
+LOCATION:Pavilhão Clube Amigos do Basquete \,Funchal
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414073
+END:VEVENT
+BEGIN:VEVENT
+UID:f94612c48e607b158f78@gdessa
+DTSTAMP:20260810T195533Z
+DTSTART;TZID=Europe/Lisbon:20270326T150000
+DTEND;TZID=Europe/Lisbon:20270326T170000
+SUMMARY:🚌 Esgueira Aveiro ECOVALOR vs GDESSA Barreiro
+LOCATION:Pavilhão OLI \,Esgueira
+DESCRIPTION:GDESSA Barreiro\\nCompetition: Liga Betclic Feminina\\nSeason: 2026/27\\nSource: https://www.fpb.pt/calendario/11445/?competicao=11445
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414084
+END:VEVENT
+END:VCALENDAR
