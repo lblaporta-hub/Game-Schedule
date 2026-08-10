@@ -1,26 +1,14 @@
 # GDESSA Game Schedule
 
-Automatic iCalendar feed for GDESSA Barreiro.
+Automatic multi-feed iCalendar system for GDESSA Barreiro.
 
-## Sources
+## Feeds
+- `calendars/gdessa.ics` — all active competitions
+- `calendars/liga-betclic.ics`
+- `calendars/preparacao.ics`
+- `calendars/sub18.ics`
 
-- Liga Betclic Feminina 2026/27:
-  https://www.fpb.pt/calendario/11445/?competicao=11445
-- Jogos de Preparação:
-  https://www.fpb.pt/calendario/11471/?competicao=11471
-- GDESSA "A" U18:
-  https://www.fpb.pt/equipa/equipa_63443/
+Future competitions are preconfigured and become active when their FPB URL is published.
 
-## Calendar subscription
-
-After GitHub Pages is enabled, subscribe to:
-
-https://lblaporta-hub.github.io/Game-Schedule/gdessa.ics
-
-## Automatic updates
-
-GitHub Actions runs the scraper once per day and can also be run manually from:
-
-Actions -> Update GDESSA Calendar -> Run workflow
-
-The script is conservative: it will not replace the calendar if no GDESSA fixtures are successfully extracted.
+## Add a competition
+Edit `config/competitions.json` and set its `url` and `"active": true`. No workflow/script change is required.

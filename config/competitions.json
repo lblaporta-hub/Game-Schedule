@@ -1,0 +1,69 @@
+{
+  "calendar": {
+    "name": "GDESSA Barreiro",
+    "season": "2026/27",
+    "prodid": "-//GDESSA Barreiro//FPB Calendar//PT",
+    "timezone": "Europe/Lisbon",
+    "team_aliases": [
+      "GDESSA Barreiro",
+      "GDESSA"
+    ],
+    "output_dir": "calendars",
+    "competitions": [
+      {
+        "id": "liga-betclic",
+        "name": "Liga Betclic Feminina",
+        "short_name": "Liga Betclic",
+        "emoji": "🏀",
+        "source_type": "calendar",
+        "url": "https://www.fpb.pt/calendario/11445/?competicao=11445",
+        "active": true
+      },
+      {
+        "id": "preparacao",
+        "name": "Jogos de Preparação",
+        "short_name": "Preparação",
+        "emoji": "🏃",
+        "source_type": "calendar",
+        "url": "https://www.fpb.pt/calendario/11471/?competicao=11471",
+        "active": true
+      },
+      {
+        "id": "supertaca",
+        "name": "Supertaça Feminina",
+        "short_name": "Supertaça",
+        "emoji": "🏆",
+        "source_type": "calendar",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": "2-divisao",
+        "name": "Campeonato Nacional da 2ª Divisão Feminina",
+        "short_name": "2ª Divisão",
+        "emoji": "🏀",
+        "source_type": "calendar",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": "taca-portugal",
+        "name": "Taça de Portugal Feminina Skoiy",
+        "short_name": "Taça de Portugal",
+        "emoji": "🏆",
+        "source_type": "calendar",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": "sub18",
+        "name": "Campeonato Nacional Sub18 Femininos",
+        "short_name": "Sub18",
+        "emoji": "👧",
+        "source_type": "team",
+        "url": "https://www.fpb.pt/equipa/equipa_63443/",
+        "active": true
+      }
+    ]
+  }
+}
