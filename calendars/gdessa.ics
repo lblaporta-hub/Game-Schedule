@@ -9,12 +9,22 @@ REFRESH-INTERVAL;VALUE=DURATION:P1D
 X-PUBLISHED-TTL:P1D
 BEGIN:VEVENT
 UID:0dd44a19427a2145e9be@gdessa
-DTSTAMP:20260904T111653Z
+DTSTAMP:20260905T103438Z
 DTSTART;TZID=Europe/Lisbon:20260919T113000
 DTEND;TZID=Europe/Lisbon:20260919T133000
 SUMMARY:🚌 GDRAR vs GDESSA Barreiro
 LOCATION:Pavilhão EB23 André Resende \,Évora
 DESCRIPTION:GDESSA Barreiro\\nCompetição: Jogos de Preparação\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=415333
 URL:https://www.fpb.pt/ficha-de-jogo?internalID=415333
+END:VEVENT
+BEGIN:VEVENT
+UID:d2b9ff2053b195d0da28@gdessa
+DTSTAMP:20260905T103438Z
+DTSTART;TZID=Europe/Lisbon:20261005T113000
+DTEND;TZID=Europe/Lisbon:20261005T133000
+SUMMARY:🏠 GDESSA Barreiro vs CRC Quinta dos Lombos
+LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Liga Betclic Feminina\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=413957
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=413957
 END:VEVENT
 END:VCALENDAR
