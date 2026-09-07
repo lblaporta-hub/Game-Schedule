@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import hashlib
-import html
 import json
 import re
 from datetime import datetime, timedelta
@@ -13,35 +12,54 @@ from bs4 import BeautifulSoup
 
 
 # ============================================================
-# CONFIGURATION
+# PATHS / CONFIG
 # ============================================================
 
 ROOT = Path(__file__).resolve().parents[1]
 
 CONFIG_FILE = ROOT / "config" / "competitions.json"
 
-CFG = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))["calendar"]
+config = json.loads(
+    CONFIG_FILE.read_text(encoding="utf-8")
+)
 
-OUT = ROOT / CFG.get("output_dir", "calendars")
-OUT.mkdir(parents=True, exist_ok=True)
+CFG = config["calendar"]
+
+OUTPUT_DIR = ROOT / CFG.get(
+    "output_dir",
+    "calendars"
+)
+
+OUTPUT_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 
-# Official GDESSA FPB team calendar.
-# This is used as an additional source because it contains
-# GDESSA's fixtures across competitions.
-TEAM_CALENDAR_URL = "https://www.fpb.pt/calendario/clube_68/"
-
+# ============================================================
+# SETTINGS
+# ============================================================
 
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 "
-        "(compatible; GDESSA-Calendar/3.0; "
-        "+https://github.com/lblaporta-hub/Game-Schedule)"
+        "(Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 "
+        "(KHTML, like Gecko) "
+        "Chrome/140 Safari/537.36"
     )
 }
 
+TIMEZONE = CFG.get(
+    "timezone",
+    "Europe/Lisbon"
+)
 
-# Portuguese FPB month abbreviations
+TEAM_CALENDAR_URL = (
+    "https://www.fpb.pt/calendario/clube_68/"
+)
+
+
 MONTHS = {
     "JAN": 1,
     "FEV": 2,
@@ -59,42 +77,29 @@ MONTHS = {
 
 
 TIME_RE = re.compile(
-    r"\b([01]?\d|2[0-3])H([0-5]\d)\b",
-    re.IGNORECASE,
+    r"\b(\d{1,2})H(\d{2})\b",
+    re.IGNORECASE
 )
-
 
 DATE_RE = re.compile(
-    r"^\s*(\d{1,2})\s+([A-ZÇ]+)\s+(\d{4})\s*$",
-    re.IGNORECASE,
-)
-
-
-STATUS_RE = re.compile(
-    r"\b(a definir|a indicar|adiado)\b",
-    re.IGNORECASE,
+    r"^(\d{1,2})\s+([A-ZÇ]+)\s+(\d{4})$",
+    re.IGNORECASE
 )
 
 
 # ============================================================
-# BASIC HELPERS
+# TEXT HELPERS
 # ============================================================
 
 def clean(text):
-    """
-    Normalize whitespace and HTML entities.
-    """
     return re.sub(
         r"\s+",
         " ",
-        html.unescape(text or "")
+        (text or "").replace("\xa0", " ")
     ).strip()
 
 
-def esc(text):
-    """
-    Escape text for iCalendar.
-    """
+def escape_ics(text):
     return (
         clean(text)
         .replace("\\", "\\\\")
@@ -104,21 +109,198 @@ def esc(text):
     )
 
 
-def fetch(url):
-    """
-    Download and parse an FPB page.
-    """
+def is_gdessa(text):
+    text = clean(text).casefold()
+
+    aliases = CFG.get(
+        "team_aliases",
+        ["GDESSA Barreiro", "GDESSA"]
+    )
+
+    return any(
+        alias.casefold() in text
+        for alias in aliases
+    )
+
+
+# ============================================================
+# DATE
+# ============================================================
+
+def parse_date(text):
+
+    text = clean(text).upper()
+
+    match = DATE_RE.match(text)
+
+    if not match:
+        return None
+
+    day = int(match.group(1))
+    month_name = match.group(2)
+    year = int(match.group(3))
+
+    month = MONTHS.get(month_name)
+
+    if not month:
+        return None
+
+    return datetime(
+        year,
+        month,
+        day
+    )
+
+
+# ============================================================
+# TIME
+# ============================================================
+
+def parse_time(text):
+
+    match = TIME_RE.search(
+        text or ""
+    )
+
+    if not match:
+        return None
+
+    return (
+        f"{int(match.group(1)):02d}:"
+        f"{match.group(2)}"
+    )
+
+
+# ============================================================
+# TEAM NAME NORMALIZATION
+# ============================================================
+
+def collapse_duplicate(text):
+
+    text = clean(text)
+
+    words = text.split()
+
+    if len(words) < 2:
+        return text
+
+    # Try exact duplicated halves.
+    if len(words) % 2 == 0:
+
+        half = len(words) // 2
+
+        first = " ".join(
+            words[:half]
+        )
+
+        second = " ".join(
+            words[half:]
+        )
+
+        if first.casefold() == second.casefold():
+            return first
+
+    return text
+
+
+def normalize_team_name(text):
+
+    text = clean(text)
+
+    # FPB sometimes repeats the team name because
+    # of image alt/title content.
+    text = collapse_duplicate(text)
+
+    return text
+
+
+# ============================================================
+# COMPETITION DETECTION
+# ============================================================
+
+def detect_competition(text):
+
+    t = clean(text).casefold()
+
+    rules = {
+
+        "liga-betclic": [
+            "liga betclic feminina",
+        ],
+
+        "preparacao": [
+            "jogos preparação femininos",
+            "jogos de preparação femininos",
+        ],
+
+        "supertaca": [
+            "supertaça feminina",
+            "supertaça",
+        ],
+
+        "taca-portugal": [
+            "taça de portugal feminina",
+            "taça de portugal",
+        ],
+
+        "2-divisao": [
+            "2ª divisão feminina",
+            "2.ª divisão feminina",
+            "2a divisão feminina",
+            "2 divisão feminina",
+        ],
+
+        "sub18": [
+            "campeonato nacional sub18 femininos",
+            "campeonato nacional sub18",
+            "sub 18 feminino",
+            "sub18 feminino",
+        ],
+    }
+
+    for competition_id, keywords in rules.items():
+
+        for keyword in keywords:
+
+            if keyword in t:
+                return competition_id
+
+    return None
+
+
+# ============================================================
+# COMPETITION METADATA
+# ============================================================
+
+def competition_by_id():
+
+    return {
+        comp["id"]: comp
+        for comp in CFG["competitions"]
+    }
+
+
+# ============================================================
+# HTTP
+# ============================================================
+
+def get_soup(url):
+
+    print(
+        f"FETCH: {url}"
+    )
+
     response = requests.get(
         url,
         headers=HEADERS,
-        timeout=30,
+        timeout=45
     )
 
     response.raise_for_status()
 
     response.encoding = (
         response.apparent_encoding
-        or response.encoding
+        or "utf-8"
     )
 
     return BeautifulSoup(
@@ -128,493 +310,314 @@ def fetch(url):
 
 
 # ============================================================
-# DATE / TIME
+# EXTRACT FIXTURE FROM FPB ANCHOR
 # ============================================================
 
-def parse_date(text):
-    """
-    Parse FPB date headings such as:
+def parse_fixture(anchor_text):
 
-        5 OUT 2026
-        1 DEZ 2026
-        6 FEV 2027
-    """
+    text = clean(anchor_text)
 
-    match = DATE_RE.match(clean(text))
-
-    if not match:
+    if not is_gdessa(text):
         return None
 
-    month = match.group(2).upper()
+    # Must contain either a time or an FPB
+    # "a definir / a indicar" status.
+    has_time = bool(
+        TIME_RE.search(text)
+    )
 
-    if month not in MONTHS:
+    has_status = bool(
+        re.search(
+            r"\b(a definir|a indicar|adiado)\b",
+            text,
+            re.IGNORECASE
+        )
+    )
+
+    if not has_time and not has_status:
         return None
 
-    return datetime(
-        int(match.group(3)),
-        MONTHS[month],
-        int(match.group(1)),
+    # --------------------------------------------------------
+    # Competition
+    # --------------------------------------------------------
+
+    competition_id = detect_competition(
+        text
     )
 
-
-def parse_time(text):
-    """
-    Convert FPB time:
-
-        11H30 -> 11:30
-        17H00 -> 17:00
-
-    Returns None when the time is not defined.
-    """
-
-    match = TIME_RE.search(text or "")
-
-    if not match:
+    if not competition_id:
         return None
 
-    return (
-        f"{match.group(1).zfill(2)}:"
-        f"{match.group(2)}"
-    )
+    # --------------------------------------------------------
+    # Remove competition suffix
+    # --------------------------------------------------------
 
+    fixture_part = text
 
-# ============================================================
-# TEAM IDENTIFICATION
-# ============================================================
-
-def is_gdessa(text):
-    """
-    Check whether a fixture contains GDESSA.
-    """
-
-    text = clean(text).casefold()
-
-    return any(
-        alias.casefold() in text
-        for alias in CFG["team_aliases"]
-    )
-
-
-# ============================================================
-# TEAM NAME PARSING
-# ============================================================
-
-def remove_duplicate_team_name(text):
-    """
-    FPB sometimes renders a team twice:
-
-        GDESSA Barreiro GDESSA Barreiro
-
-    Convert it to:
-
-        GDESSA Barreiro
-    """
-
-    words = text.split()
-
-    if len(words) < 2:
-        return text
-
-    if len(words) % 2 == 0:
-        half = len(words) // 2
-
-        first = " ".join(words[:half])
-        second = " ".join(words[half:])
-
-        if first.casefold() == second.casefold():
-            return first
-
-    return text
-
-
-def split_teams(text):
-    """
-    Extract:
-
-        home
-        away
-        venue
-
-    from the combined FPB fixture text.
-    """
-
-    text = clean(text)
-
-    # Remove competition/team category information
-    # from the end of the fixture.
-    markers = [
+    competition_markers = [
         "Sénior Feminino |",
-        "Sénior Masculino |",
         "Sub 18 Feminino |",
         "Sub 18 F |",
-        "Sub 18 Feminino",
-        "Sub 18 F",
-        "Jogos Preparação Femininos",
-        "Jogos de Preparação Femininos",
     ]
 
-    for marker in markers:
-        if marker in text:
-            text = text.split(marker, 1)[0].strip()
+    for marker in competition_markers:
+
+        if marker in fixture_part:
+
+            fixture_part = fixture_part.split(
+                marker,
+                1
+            )[0]
+
             break
 
-    # Remove the time or status from the middle.
-    time_match = TIME_RE.search(text)
+    fixture_part = clean(
+        fixture_part
+    )
+
+    # --------------------------------------------------------
+    # Find time/status
+    # --------------------------------------------------------
+
+    time_match = TIME_RE.search(
+        fixture_part
+    )
+
+    status_match = re.search(
+        r"\b(a definir|a indicar|adiado)\b",
+        fixture_part,
+        re.IGNORECASE
+    )
 
     if time_match:
-        left = clean(text[:time_match.start()])
-        right = clean(text[time_match.end():])
+
+        separator = time_match
+
+        home_raw = clean(
+            fixture_part[
+                :separator.start()
+            ]
+        )
+
+        remaining = clean(
+            fixture_part[
+                separator.end():
+            ]
+        )
+
+        game_time = parse_time(
+            separator.group(0)
+        )
+
+    elif status_match:
+
+        separator = status_match
+
+        home_raw = clean(
+            fixture_part[
+                :separator.start()
+            ]
+        )
+
+        remaining = clean(
+            fixture_part[
+                separator.end():
+            ]
+        )
+
+        game_time = None
+
     else:
-        status_match = STATUS_RE.search(text)
 
-        if not status_match:
-            return None, None, None
+        return None
 
-        left = clean(text[:status_match.start()])
-        right = clean(text[status_match.end():])
+    # --------------------------------------------------------
+    # Determine away team
+    # --------------------------------------------------------
 
-    home = remove_duplicate_team_name(left)
+    # The FPB format is essentially:
+    #
+    # HOME HOME TIME AWAY AWAY VENUE
+    #
+    # We need to find where the venue starts.
 
-    # Known FPB venue prefixes.
-    venue_prefixes = [
+    venue_markers = [
         "Pavilhão ",
         "Pav. ",
-        "Pav Multiusos",
         "Complexo ",
-        "Nave ",
         "Arena ",
-        "Colégio ",
-        "Escola Secundária ",
+        "Nave ",
         "Esc Sec ",
+        "Escola Secundária ",
+        "Colégio ",
+        "Pavilhao ",
     ]
 
-    positions = []
+    venue_position = None
 
-    for prefix in venue_prefixes:
-        position = right.find(prefix)
+    for marker in venue_markers:
 
-        if position > 0:
-            positions.append(position)
+        position = remaining.find(
+            marker
+        )
 
-    if positions:
-        venue_position = min(positions)
+        if position >= 0:
 
-        away = remove_duplicate_team_name(
-            clean(right[:venue_position])
+            if (
+                venue_position is None
+                or position < venue_position
+            ):
+                venue_position = position
+
+    if venue_position is not None:
+
+        away_part = clean(
+            remaining[:venue_position]
         )
 
         venue = clean(
-            right[venue_position:]
+            remaining[venue_position:]
         )
 
     else:
-        away = remove_duplicate_team_name(right)
+
+        away_part = clean(
+            remaining
+        )
+
         venue = ""
 
-    return home, away, venue
-
-
-# ============================================================
-# COMPETITION DETECTION
-# ============================================================
-
-def competition_text(text):
-    """
-    Return the competition portion of an FPB fixture.
-    """
-
-    text = clean(text)
-
-    markers = [
-        "Sénior Feminino |",
-        "Sénior Masculino |",
-        "Sub 18 Feminino |",
-        "Sub 18 F |",
-        "Sub 18 Feminino",
-        "Sub 18 F",
-    ]
-
-    for marker in markers:
-        if marker in text:
-            return clean(
-                text.split(marker, 1)[1]
-            )
-
-    return ""
-
-
-def normalise_competition_name(text):
-    """
-    Normalize competition text for matching.
-    """
-
-    text = clean(text).casefold()
-
-    replacements = {
-        "supertaça feminina": "supertaca",
-        "supertaça": "supertaca",
-        "liga betclic feminina": "liga-betclic",
-        "jogos preparação femininos": "preparacao",
-        "jogos de preparação femininos": "preparacao",
-        "campeonato nacional sub18 femininos": "sub18",
-        "campeonato nacional sub 18 femininos": "sub18",
-        "taça de portugal feminina skoiy": "taca-portugal",
-        "taça de portugal feminina": "taca-portugal",
-        "2ª divisão feminina": "2-divisao",
-        "2.ª divisão feminina": "2-divisao",
-        "2a divisão feminina": "2-divisao",
-    }
-
-    for name, comp_id in replacements.items():
-        if name in text:
-            return comp_id
-
-    return None
-
-
-def competition_matches(comp, text):
-    """
-    Determine whether a fixture belongs to a configured
-    competition.
-    """
-
-    comp_id = comp["id"]
-
-    detected = normalise_competition_name(
-        competition_text(text)
+    home = normalize_team_name(
+        home_raw
     )
 
-    if detected:
-        return detected == comp_id
+    away = normalize_team_name(
+        away_part
+    )
 
-    # Fallback keyword matching.
-    keywords = {
-        "liga-betclic": [
-            "liga betclic feminina",
-        ],
-        "preparacao": [
-            "jogos preparação femininos",
-            "jogos de preparação femininos",
-        ],
-        "supertaca": [
-            "supertaça feminina",
-            "supertaça",
-        ],
-        "2-divisao": [
-            "2ª divisão feminina",
-            "2.ª divisão feminina",
-            "2a divisão feminina",
-        ],
-        "taca-portugal": [
-            "taça de portugal feminina",
-            "taça de portugal",
-        ],
-        "sub18": [
-            "sub 18 feminino",
-            "sub18 feminino",
-            "campeonato nacional sub18",
-        ],
+    if not home or not away:
+        return None
+
+    # Remove accidental competition/status leftovers.
+    away = re.sub(
+        r"\s+(Sénior|Sub)\s+.*$",
+        "",
+        away,
+        flags=re.IGNORECASE
+    )
+
+    away = normalize_team_name(
+        away
+    )
+
+    return {
+        "competition_id": competition_id,
+        "home": home,
+        "away": away,
+        "time": game_time,
+        "venue": venue,
     }
 
-    for keyword in keywords.get(comp_id, []):
-        if keyword.casefold() in text.casefold():
-            return True
-
-    return False
-
 
 # ============================================================
-# EVENT EXTRACTION
+# EXTRACT FROM CALENDAR PAGE
 # ============================================================
 
-def extract_events(url, comp):
-    """
-    Extract GDESSA fixtures from an FPB calendar page.
-    """
+def extract_calendar_page(
+    url,
+    forced_competition=None
+):
 
-    print(f"FETCH: {url}")
-
-    soup = fetch(url)
+    soup = get_soup(url)
 
     events = []
 
     current_date = None
 
-    # FPB fixture pages use h3 for the date and anchors
-    # for the individual games.
-    for node in soup.find_all(["h3", "a"]):
+    # --------------------------------------------------------
+    # Iterate through the document in the same order in
+    # which FPB presents dates and games.
+    # --------------------------------------------------------
+
+    for element in soup.find_all(
+        ["h3", "a"]
+    ):
 
         # ----------------------------------------------------
         # DATE
         # ----------------------------------------------------
 
-        if node.name == "h3":
+        if element.name == "h3":
 
-            parsed = parse_date(
-                node.get_text(" ", strip=True)
+            date = parse_date(
+                element.get_text(
+                    " ",
+                    strip=True
+                )
             )
 
-            if parsed:
-                current_date = parsed
+            if date:
+
+                current_date = date
 
             continue
 
         # ----------------------------------------------------
-        # FIXTURE
+        # GAME
         # ----------------------------------------------------
 
         if current_date is None:
             continue
 
-        href = node.get("href", "")
-
-        text = clean(
-            node.get_text(
-                " ",
-                strip=True
-            )
+        href = element.get(
+            "href"
         )
 
-        if not href or not text:
+        if not href:
             continue
 
-        # Only GDESSA games.
-        if not is_gdessa(text):
+        text = element.get_text(
+            " ",
+            strip=True
+        )
+
+        fixture = parse_fixture(
+            text
+        )
+
+        if not fixture:
             continue
 
-        # Make sure this is actually a fixture.
-        if not TIME_RE.search(text) and not STATUS_RE.search(text):
-            continue
+        if forced_competition:
 
-        # Filter competition.
-        if not competition_matches(comp, text):
-            continue
+            fixture[
+                "competition_id"
+            ] = forced_competition
 
-        home, away, venue = split_teams(text)
+        fixture[
+            "date"
+        ] = current_date.strftime(
+            "%Y-%m-%d"
+        )
 
-        if not home or not away:
-            print(
-                "WARNING: Could not parse fixture:",
-                text
-            )
-            continue
+        fixture[
+            "source"
+        ] = url
 
-        time = parse_time(text)
+        fixture[
+            "source_href"
+        ] = urljoin(
+            url,
+            href
+        )
 
-        event = {
-            "competition_id": comp["id"],
-            "competition": comp["name"],
-            "short_name": comp["short_name"],
-            "emoji": comp.get("emoji", "🏀"),
-            "date": current_date.strftime("%Y-%m-%d"),
-            "time": time,
-            "home": home,
-            "away": away,
-            "venue": venue,
-            "source": url,
-            "source_href": urljoin(url, href),
-        }
+        events.append(
+            fixture
+        )
 
-        events.append(event)
-
-    return deduplicate_events(events)
-
-
-# ============================================================
-# TEAM CALENDAR EXTRACTION
-# ============================================================
-
-def extract_team_calendar():
-    """
-    Extract ALL GDESSA fixtures from the official GDESSA
-    FPB team calendar.
-
-    This acts as a second source and catches fixtures that
-    may not yet be available through an individual competition
-    calendar.
-    """
-
-    print(
-        f"FETCH TEAM CALENDAR: {TEAM_CALENDAR_URL}"
+    return deduplicate(
+        events
     )
-
-    soup = fetch(TEAM_CALENDAR_URL)
-
-    events = []
-
-    current_date = None
-
-    for node in soup.find_all(["h3", "a"]):
-
-        if node.name == "h3":
-
-            parsed = parse_date(
-                node.get_text(" ", strip=True)
-            )
-
-            if parsed:
-                current_date = parsed
-
-            continue
-
-        if current_date is None:
-            continue
-
-        href = node.get("href", "")
-
-        text = clean(
-            node.get_text(
-                " ",
-                strip=True
-            )
-        )
-
-        if not href or not text:
-            continue
-
-        if not is_gdessa(text):
-            continue
-
-        if not TIME_RE.search(text) and not STATUS_RE.search(text):
-            continue
-
-        home, away, venue = split_teams(text)
-
-        if not home or not away:
-            print(
-                "WARNING: Could not parse team fixture:",
-                text
-            )
-            continue
-
-        detected_competition = normalise_competition_name(
-            competition_text(text)
-        )
-
-        if not detected_competition:
-            print(
-                "WARNING: Unknown competition:",
-                text
-            )
-            continue
-
-        time = parse_time(text)
-
-        events.append({
-            "competition_id": detected_competition,
-            "date": current_date.strftime("%Y-%m-%d"),
-            "time": time,
-            "home": home,
-            "away": away,
-            "venue": venue,
-            "source": TEAM_CALENDAR_URL,
-            "source_href": urljoin(
-                TEAM_CALENDAR_URL,
-                href
-            ),
-        })
-
-    return deduplicate_events(events)
 
 
 # ============================================================
@@ -622,6 +625,7 @@ def extract_team_calendar():
 # ============================================================
 
 def event_key(event):
+
     return (
         event["competition_id"],
         event["date"],
@@ -630,81 +634,26 @@ def event_key(event):
     )
 
 
-def deduplicate_events(events):
-    """
-    Keep one copy of each fixture.
-    """
+def deduplicate(events):
 
-    unique = {}
-
-    for event in events:
-        unique[event_key(event)] = event
-
-    return list(unique.values())
-
-
-# ============================================================
-# MERGING TEAM CALENDAR WITH CONFIG
-# ============================================================
-
-def apply_competition_metadata(events, competitions):
-    """
-    Add configured competition metadata to events discovered
-    through the GDESSA team calendar.
-    """
-
-    lookup = {
-        comp["id"]: comp
-        for comp in competitions
-    }
-
-    output = []
+    result = {}
 
     for event in events:
 
-        comp = lookup.get(
-            event["competition_id"]
-        )
+        result[
+            event_key(event)
+        ] = event
 
-        if not comp:
-            print(
-                "WARNING: Competition not configured:",
-                event["competition_id"]
-            )
-            continue
-
-        # Respect active/inactive configuration.
-        if not comp.get("active"):
-            print(
-                "SKIP inactive competition:",
-                comp["name"]
-            )
-            continue
-
-        event["competition"] = comp["name"]
-        event["short_name"] = comp["short_name"]
-        event["emoji"] = comp.get(
-            "emoji",
-            "🏀"
-        )
-
-        output.append(event)
-
-    return output
+    return list(
+        result.values()
+    )
 
 
 # ============================================================
-# ICS
+# UID
 # ============================================================
 
-def uid(event):
-    """
-    Stable UID for each game.
-
-    The UID does NOT contain the time, so changing the game
-    time in FPB updates the same calendar event instead of
-    creating a duplicate.
-    """
+def event_uid(event):
 
     raw = "|".join([
         event["competition_id"],
@@ -713,89 +662,93 @@ def uid(event):
         event["away"],
     ])
 
+    digest = hashlib.sha1(
+        raw.casefold().encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
     return (
-        hashlib.sha1(
-            raw.casefold().encode("utf-8")
-        ).hexdigest()[:20]
-        + "@gdessa"
+        f"{digest[:20]}@gdessa"
     )
 
 
-def make_ics(events, calendar_name):
-    """
-    Generate a complete iCalendar feed.
-    """
+# ============================================================
+# ICS GENERATION
+# ============================================================
 
-    now = datetime.utcnow().strftime(
+def generate_ics(
+    events,
+    calendar_name
+):
+
+    timestamp = datetime.utcnow().strftime(
         "%Y%m%dT%H%M%SZ"
     )
 
-    output = [
+    lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        f"PRODID:{esc(CFG['prodid'])}",
+        f"PRODID:{escape_ics(CFG['prodid'])}",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        f"X-WR-CALNAME:{esc(calendar_name)}",
-        f"X-WR-TIMEZONE:{CFG['timezone']}",
+        f"X-WR-CALNAME:{escape_ics(calendar_name)}",
+        f"X-WR-TIMEZONE:{TIMEZONE}",
         "REFRESH-INTERVAL;VALUE=DURATION:P1D",
         "X-PUBLISHED-TTL:P1D",
     ]
 
     for event in sorted(
         events,
-        key=lambda item: (
-            item["date"],
-            item.get("time") or "",
-            item["home"],
-            item["away"],
-        ),
+        key=lambda e: (
+            e["date"],
+            e.get("time") or "",
+        )
     ):
 
-        home_is_gdessa = any(
-            alias.casefold()
-            in event["home"].casefold()
-            for alias in CFG["team_aliases"]
+        gdessa_home = is_gdessa(
+            event["home"]
         )
 
-        prefix = (
-            "🏠 "
-            if home_is_gdessa
-            else "🚌 "
+        location_icon = (
+            "🏠"
+            if gdessa_home
+            else "🚌"
         )
 
-        # Add the time to the title when available.
-        # This makes the time obvious even in calendar
-        # clients that display event titles prominently.
         if event.get("time"):
+
             summary = (
-                f"{prefix}"
+                f"{location_icon} "
                 f"{event['home']} vs "
                 f"{event['away']} — "
                 f"{event['time']}"
             )
+
         else:
+
             summary = (
-                f"{prefix}"
+                f"{location_icon} "
                 f"{event['home']} vs "
                 f"{event['away']}"
             )
 
         description = (
-            "GDESSA Barreiro\\n"
-            f"Competição: {event['competition']}\\n"
+            f"GDESSA Barreiro\\n"
+            f"Competição: "
+            f"{event['competition_id']}\\n"
             f"Época: {CFG['season']}\\n"
             f"FPB: {event['source_href']}"
         )
 
-        output.extend([
+        lines.extend([
             "BEGIN:VEVENT",
-            f"UID:{uid(event)}",
-            f"DTSTAMP:{now}",
+            f"UID:{event_uid(event)}",
+            f"DTSTAMP:{timestamp}",
         ])
 
         # ----------------------------------------------------
-        # TIMED EVENT
+        # TIMED
         # ----------------------------------------------------
 
         if event.get("time"):
@@ -804,67 +757,86 @@ def make_ics(events, calendar_name):
                 f"{event['date']}T{event['time']}"
             )
 
-            end = start + timedelta(
-                hours=2
+            end = (
+                start
+                + timedelta(hours=2)
             )
 
-            output.extend([
+            lines.extend([
                 (
-                    f"DTSTART;TZID={CFG['timezone']}:"
+                    f"DTSTART;TZID={TIMEZONE}:"
                     f"{start:%Y%m%dT%H%M%S}"
                 ),
                 (
-                    f"DTEND;TZID={CFG['timezone']}:"
+                    f"DTEND;TZID={TIMEZONE}:"
                     f"{end:%Y%m%dT%H%M%S}"
                 ),
             ])
 
         # ----------------------------------------------------
-        # ALL-DAY EVENT
+        # ALL DAY
         # ----------------------------------------------------
 
         else:
 
-            start_date = datetime.fromisoformat(
+            start = datetime.fromisoformat(
                 event["date"]
             )
 
-            end_date = (
-                start_date
+            end = (
+                start
                 + timedelta(days=1)
             )
 
-            output.extend([
+            lines.extend([
                 (
                     "DTSTART;VALUE=DATE:"
-                    f"{start_date:%Y%m%d}"
+                    f"{start:%Y%m%d}"
                 ),
                 (
                     "DTEND;VALUE=DATE:"
-                    f"{end_date:%Y%m%d}"
+                    f"{end:%Y%m%d}"
                 ),
             ])
 
-        output.append(
-            f"SUMMARY:{esc(summary)}"
+        lines.append(
+            f"SUMMARY:{escape_ics(summary)}"
         )
 
         if event.get("venue"):
-            output.append(
-                f"LOCATION:{esc(event['venue'])}"
+
+            lines.append(
+                "LOCATION:"
+                + escape_ics(
+                    event["venue"]
+                )
             )
 
-        output.extend([
-            f"DESCRIPTION:{esc(description)}",
-            f"URL:{esc(event['source_href'])}",
-            "END:VEVENT",
-        ])
+        lines.append(
+            "DESCRIPTION:"
+            + escape_ics(
+                description
+            )
+        )
 
-    output.append(
+        lines.append(
+            "URL:"
+            + escape_ics(
+                event["source_href"]
+            )
+        )
+
+        lines.append(
+            "END:VEVENT"
+        )
+
+    lines.append(
         "END:VCALENDAR"
     )
 
-    return "\r\n".join(output) + "\r\n"
+    return "\r\n".join(
+        lines
+    ) + "\r\n"
 
 
 # ============================================================
@@ -873,40 +845,41 @@ def make_ics(events, calendar_name):
 
 def main():
 
-    competitions = CFG["competitions"]
+    competitions = (
+        CFG["competitions"]
+    )
 
-    active_competitions = [
+    active = [
         comp
         for comp in competitions
         if comp.get("active")
     ]
 
-    print(
-        f"Active competitions: "
-        f"{len(active_competitions)}"
-    )
+    metadata = competition_by_id()
 
     all_events = []
 
     # --------------------------------------------------------
-    # 1. INDIVIDUAL COMPETITION SOURCES
+    # 1. INDIVIDUAL COMPETITION PAGES
     # --------------------------------------------------------
 
-    for comp in active_competitions:
+    for comp in active:
 
         url = comp.get("url")
 
         if not url:
+
             print(
                 f"NO URL: {comp['name']}"
             )
+
             continue
 
         try:
 
-            events = extract_events(
+            events = extract_calendar_page(
                 url,
-                comp
+                forced_competition=comp["id"]
             )
 
             print(
@@ -914,59 +887,25 @@ def main():
                 f"{len(events)} events"
             )
 
-            # Write individual feed when events
-            # were successfully found.
-            if events:
-
-                filename = (
-                    OUT
-                    / f"{comp['id']}.ics"
-                )
-
-                filename.write_text(
-                    make_ics(
-                        events,
-                        (
-                            f"{CFG['name']} — "
-                            f"{comp['short_name']}"
-                        ),
-                    ),
-                    encoding="utf-8",
-                )
-
-                all_events.extend(
-                    events
-                )
-
-            else:
-
-                print(
-                    f"WARNING: No events found "
-                    f"for {comp['name']}"
-                )
+            all_events.extend(
+                events
+            )
 
         except Exception as error:
 
             print(
-                f"ERROR extracting "
-                f"{comp['name']}: {error}"
+                f"ERROR {comp['name']}: "
+                f"{error}"
             )
 
     # --------------------------------------------------------
-    # 2. OFFICIAL GDESSA TEAM CALENDAR
+    # 2. GDESSA TEAM CALENDAR
     # --------------------------------------------------------
 
     try:
 
-        team_events = (
-            extract_team_calendar()
-        )
-
-        team_events = (
-            apply_competition_metadata(
-                team_events,
-                competitions,
-            )
+        team_events = extract_calendar_page(
+            TEAM_CALENDAR_URL
         )
 
         print(
@@ -974,113 +913,174 @@ def main():
             f"{len(team_events)} events"
         )
 
-        # Add only events not already present.
-        existing = {
-            event_key(event)
-            for event in all_events
-        }
-
         for event in team_events:
 
-            key = event_key(event)
+            competition_id = (
+                event["competition_id"]
+            )
 
-            if key not in existing:
+            comp = metadata.get(
+                competition_id
+            )
 
-                all_events.append(event)
-
-                existing.add(key)
+            if not comp:
 
                 print(
-                    "ADDED FROM TEAM CALENDAR:",
-                    event["date"],
-                    event["home"],
-                    "vs",
-                    event["away"],
+                    "UNKNOWN COMPETITION:",
+                    competition_id
                 )
+
+                continue
+
+            if not comp.get("active"):
+
+                print(
+                    "SKIP inactive:",
+                    comp["name"]
+                )
+
+                continue
+
+            all_events.append(
+                event
+            )
 
     except Exception as error:
 
         print(
-            "ERROR reading GDESSA team calendar:",
+            "ERROR TEAM CALENDAR:",
             error
         )
 
     # --------------------------------------------------------
-    # 3. FINAL DEDUPLICATION
+    # 3. DEDUPLICATE
     # --------------------------------------------------------
 
-    all_events = deduplicate_events(
+    all_events = deduplicate(
         all_events
     )
 
     # --------------------------------------------------------
-    # 4. REBUILD INDIVIDUAL FEEDS FROM
-    #    THE COMPLETE DATASET
+    # 4. PRINT EVERY EVENT
     # --------------------------------------------------------
 
-    for comp in active_competitions:
+    print("")
+    print(
+        "================================"
+    )
+    print(
+        f"TOTAL EVENTS: {len(all_events)}"
+    )
+    print(
+        "================================"
+    )
 
-        comp_events = [
-            event
-            for event in all_events
-            if event["competition_id"]
-            == comp["id"]
-        ]
-
-        if not comp_events:
-            continue
-
-        filename = (
-            OUT
-            / f"{comp['id']}.ics"
+    for event in sorted(
+        all_events,
+        key=lambda e: (
+            e["date"],
+            e.get("time") or ""
         )
-
-        filename.write_text(
-            make_ics(
-                comp_events,
-                (
-                    f"{CFG['name']} — "
-                    f"{comp['short_name']}"
-                ),
-            ),
-            encoding="utf-8",
-        )
+    ):
 
         print(
-            f"FEED: {filename.name} "
-            f"({len(comp_events)} events)"
+            event["date"],
+            event.get("time") or "TBD",
+            "|",
+            event["home"],
+            "vs",
+            event["away"],
+            "|",
+            event["competition_id"]
         )
 
+    print(
+        "================================"
+    )
+
     # --------------------------------------------------------
-    # 5. MASTER CALENDAR
+    # SAFETY CHECK
     # --------------------------------------------------------
 
     if not all_events:
 
-        raise SystemExit(
-            "No fixtures extracted. "
-            "Master feed was NOT overwritten."
+        raise RuntimeError(
+            "NO EVENTS FOUND. "
+            "Existing ICS files were NOT overwritten."
         )
 
-    master = make_ics(
+    # --------------------------------------------------------
+    # 5. INDIVIDUAL FEEDS
+    # --------------------------------------------------------
+
+    for comp in active:
+
+        comp_events = [
+            event
+            for event in all_events
+            if event[
+                "competition_id"
+            ] == comp["id"]
+        ]
+
+        if not comp_events:
+
+            print(
+                f"NO EVENTS FOR: "
+                f"{comp['id']}"
+            )
+
+            continue
+
+        output_file = (
+            OUTPUT_DIR
+            / f"{comp['id']}.ics"
+        )
+
+        output_file.write_text(
+            generate_ics(
+                comp_events,
+                (
+                    f"{CFG['name']} — "
+                    f"{comp['short_name']}"
+                )
+            ),
+            encoding="utf-8"
+        )
+
+        print(
+            f"FEED: "
+            f"{output_file.name} "
+            f"({len(comp_events)} events)"
+        )
+
+    # --------------------------------------------------------
+    # 6. MASTER FEED
+    # --------------------------------------------------------
+
+    master = generate_ics(
         all_events,
-        f"{CFG['name']} — All Competitions",
+        f"{CFG['name']} — All Competitions"
     )
 
-    # Main calendar
-    (
-        OUT / "gdessa.ics"
-    ).write_text(
+    master_file = (
+        OUTPUT_DIR
+        / "gdessa.ics"
+    )
+
+    master_file.write_text(
         master,
-        encoding="utf-8",
+        encoding="utf-8"
     )
 
-    # Root compatibility feed
-    (
+    # Root compatibility copy
+    root_file = (
         ROOT / "gdessa.ics"
-    ).write_text(
+    )
+
+    root_file.write_text(
         master,
-        encoding="utf-8",
+        encoding="utf-8"
     )
 
     print(
@@ -1093,7 +1093,7 @@ def main():
 
 
 # ============================================================
-# ENTRY POINT
+# RUN
 # ============================================================
 
 if __name__ == "__main__":
