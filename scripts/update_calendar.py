@@ -5,7 +5,7 @@ import json
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 
 import requests
 from bs4 import BeautifulSoup
@@ -47,7 +47,12 @@ HEADERS = {
         "AppleWebKit/537.36 "
         "(KHTML, like Gecko) "
         "Chrome/140 Safari/537.36"
-    )
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,"
+        "application/xml;q=0.9,*/*;q=0.8"
+    ),
+    "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8",
 }
 
 TIMEZONE = CFG.get(
@@ -57,6 +62,10 @@ TIMEZONE = CFG.get(
 
 TEAM_CALENDAR_URL = (
     "https://www.fpb.pt/calendario/clube_68/"
+)
+
+FPB_AJAX_URL = (
+    "https://www.fpb.pt/wp-admin/admin-ajax.php"
 )
 
 
@@ -145,11 +154,25 @@ def parse_date(text):
     if not month:
         return None
 
-    return datetime(
-        year,
-        month,
-        day
-    )
+    try:
+        return datetime(
+            year,
+            month,
+            day
+        )
+    except ValueError:
+        return None
+
+
+def parse_iso_date(value):
+
+    try:
+        return datetime.strptime(
+            value,
+            "%Y-%m-%d"
+        )
+    except (ValueError, TypeError):
+        return None
 
 
 # ============================================================
@@ -184,7 +207,6 @@ def collapse_duplicate(text):
     if len(words) < 2:
         return text
 
-    # Try exact duplicated halves.
     if len(words) % 2 == 0:
 
         half = len(words) // 2
@@ -207,8 +229,6 @@ def normalize_team_name(text):
 
     text = clean(text)
 
-    # FPB sometimes repeats the team name because
-    # of image alt/title content.
     text = collapse_duplicate(text)
 
     return text
@@ -281,18 +301,108 @@ def competition_by_id():
 
 
 # ============================================================
-# HTTP
+# COMPETITION NUMBER FROM FPB URL
 # ============================================================
 
-def get_soup(url):
+def get_fpb_competition_id(url):
+
+    try:
+
+        parsed = urlparse(url)
+
+        query = parse_qs(
+            parsed.query
+        )
+
+        values = query.get(
+            "competicao"
+        )
+
+        if values:
+            return values[0]
+
+    except Exception:
+        pass
+
+    return None
+
+
+# ============================================================
+# SEASON END
+# ============================================================
+
+def get_season_end_date():
+
+    season = str(
+        CFG.get(
+            "season",
+            "2026/2027"
+        )
+    )
+
+    match = re.search(
+        r"(\d{4})\s*[/\-]\s*(\d{2,4})",
+        season
+    )
+
+    if match:
+
+        first_year = int(
+            match.group(1)
+        )
+
+        second_part = match.group(2)
+
+        if len(second_part) == 2:
+
+            second_year = (
+                (first_year // 100) * 100
+                + int(second_part)
+            )
+
+        else:
+
+            second_year = int(
+                second_part
+            )
+
+        return datetime(
+            second_year,
+            6,
+            30
+        )
+
+    # Safe fallback
+    return datetime.now() + timedelta(
+        days=365
+    )
+
+
+# ============================================================
+# HTTP SESSION
+# ============================================================
+
+SESSION = requests.Session()
+
+SESSION.headers.update(
+    HEADERS
+)
+
+
+def get_response(
+    url,
+    params=None,
+    headers=None
+):
 
     print(
         f"FETCH: {url}"
     )
 
-    response = requests.get(
+    response = SESSION.get(
         url,
-        headers=HEADERS,
+        params=params,
+        headers=headers,
         timeout=45
     )
 
@@ -301,6 +411,15 @@ def get_soup(url):
     response.encoding = (
         response.apparent_encoding
         or "utf-8"
+    )
+
+    return response
+
+
+def get_soup(url):
+
+    response = get_response(
+        url
     )
 
     return BeautifulSoup(
@@ -320,8 +439,6 @@ def parse_fixture(anchor_text):
     if not is_gdessa(text):
         return None
 
-    # Must contain either a time or an FPB
-    # "a definir / a indicar" status.
     has_time = bool(
         TIME_RE.search(text)
     )
@@ -432,14 +549,8 @@ def parse_fixture(anchor_text):
         return None
 
     # --------------------------------------------------------
-    # Determine away team
+    # Venue detection
     # --------------------------------------------------------
-
-    # The FPB format is essentially:
-    #
-    # HOME HOME TIME AWAY AWAY VENUE
-    #
-    # We need to find where the venue starts.
 
     venue_markers = [
         "Pavilhão ",
@@ -472,11 +583,15 @@ def parse_fixture(anchor_text):
     if venue_position is not None:
 
         away_part = clean(
-            remaining[:venue_position]
+            remaining[
+                :venue_position
+            ]
         )
 
         venue = clean(
-            remaining[venue_position:]
+            remaining[
+                venue_position:
+            ]
         )
 
     else:
@@ -520,23 +635,30 @@ def parse_fixture(anchor_text):
 
 
 # ============================================================
-# EXTRACT FROM CALENDAR PAGE
+# EXTRACT CALENDAR HTML
 # ============================================================
 
-def extract_calendar_page(
-    url,
+def extract_calendar_html(
+    html,
+    source_url,
     forced_competition=None
 ):
 
-    soup = get_soup(url)
+    soup = BeautifulSoup(
+        html,
+        "html.parser"
+    )
 
     events = []
 
     current_date = None
 
     # --------------------------------------------------------
-    # Iterate through the document in the same order in
-    # which FPB presents dates and games.
+    # The FPB returns calendar blocks containing:
+    #
+    # <h3>5 OUT 2026</h3>
+    #
+    # followed by <a> game blocks.
     # --------------------------------------------------------
 
     for element in soup.find_all(
@@ -602,12 +724,12 @@ def extract_calendar_page(
 
         fixture[
             "source"
-        ] = url
+        ] = source_url
 
         fixture[
             "source_href"
         ] = urljoin(
-            url,
+            source_url,
             href
         )
 
@@ -617,6 +739,288 @@ def extract_calendar_page(
 
     return deduplicate(
         events
+    )
+
+
+# ============================================================
+# EXTRACT INITIAL CALENDAR PAGE
+# ============================================================
+
+def extract_calendar_page(
+    url,
+    forced_competition=None
+):
+
+    soup = get_soup(
+        url
+    )
+
+    return extract_calendar_html(
+        str(soup),
+        url,
+        forced_competition
+    )
+
+
+# ============================================================
+# FPB AJAX LOAD MORE
+# ============================================================
+
+def fetch_ajax_period(
+    competition_number,
+    from_date,
+    to_date,
+    source_url,
+    forced_competition=None
+):
+
+    params = [
+        (
+            "action",
+            "get_more_days"
+        ),
+        (
+            "competicao[]",
+            str(competition_number)
+        ),
+        (
+            "period[time_option]",
+            "loadmore"
+        ),
+        (
+            "period[from_date]",
+            from_date.strftime(
+                "%Y/%m/%d"
+            )
+        ),
+        (
+            "period[to_date]",
+            to_date.strftime(
+                "%Y/%m/%d"
+            )
+        ),
+    ]
+
+    print(
+        "AJAX:",
+        from_date.strftime("%Y-%m-%d"),
+        "->",
+        to_date.strftime("%Y-%m-%d"),
+        "| competition",
+        competition_number
+    )
+
+    headers = {
+        "Referer": source_url,
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "*/*",
+    }
+
+    response = get_response(
+        FPB_AJAX_URL,
+        params=params,
+        headers=headers
+    )
+
+    # --------------------------------------------------------
+    # FPB returns JSON:
+    #
+    # {
+    #     "result": [
+    #         "HTML..."
+    #     ]
+    # }
+    # --------------------------------------------------------
+
+    try:
+
+        payload = response.json()
+
+    except ValueError:
+
+        print(
+            "WARNING: AJAX response was not JSON"
+        )
+
+        return []
+
+    result = payload.get(
+        "result"
+    )
+
+    if not result:
+        return []
+
+    if isinstance(
+        result,
+        list
+    ):
+
+        html = "\n".join(
+            str(item)
+            for item in result
+        )
+
+    else:
+
+        html = str(
+            result
+        )
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    #
+    # WordPress AJAX may escape HTML as:
+    #
+    # <\/h3>
+    #
+    # Restore it before BeautifulSoup.
+    # --------------------------------------------------------
+
+    html = html.replace(
+        r"\/",
+        "/"
+    )
+
+    events = extract_calendar_html(
+        html,
+        source_url,
+        forced_competition
+    )
+
+    print(
+        f"AJAX RESULT: {len(events)} GDESSA events"
+    )
+
+    return events
+
+
+# ============================================================
+# LOAD ALL COMPETITION GAMES
+# ============================================================
+
+def extract_full_competition_calendar(
+    url,
+    forced_competition=None
+):
+
+    # --------------------------------------------------------
+    # 1. Load initial page
+    # --------------------------------------------------------
+
+    initial_events = extract_calendar_page(
+        url,
+        forced_competition
+    )
+
+    print(
+        f"INITIAL PAGE: {len(initial_events)} events"
+    )
+
+    all_events = list(
+        initial_events
+    )
+
+    # --------------------------------------------------------
+    # 2. Find FPB numeric competition ID
+    # --------------------------------------------------------
+
+    competition_number = (
+        get_fpb_competition_id(
+            url
+        )
+    )
+
+    if not competition_number:
+
+        print(
+            "NO FPB COMPETITION ID:",
+            url
+        )
+
+        return deduplicate(
+            all_events
+        )
+
+    # --------------------------------------------------------
+    # 3. Find first date not covered by initial HTML
+    # --------------------------------------------------------
+
+    dates = [
+        parse_iso_date(
+            event["date"]
+        )
+        for event in initial_events
+        if event.get("date")
+    ]
+
+    dates = [
+        date
+        for date in dates
+        if date is not None
+    ]
+
+    if dates:
+
+        cursor = max(dates) + timedelta(
+            days=1
+        )
+
+    else:
+
+        # Safe fallback for the season.
+        cursor = datetime(
+            datetime.now().year,
+            7,
+            1
+        )
+
+    season_end = get_season_end_date()
+
+    # --------------------------------------------------------
+    # 4. Load future games in 30-day chunks
+    #
+    # This reproduces the FPB "scroll/load more" behaviour.
+    # --------------------------------------------------------
+
+    while cursor <= season_end:
+
+        period_end = min(
+            cursor + timedelta(days=29),
+            season_end
+        )
+
+        try:
+
+            ajax_events = fetch_ajax_period(
+                competition_number,
+                cursor,
+                period_end,
+                url,
+                forced_competition
+            )
+
+            all_events.extend(
+                ajax_events
+            )
+
+        except Exception as error:
+
+            print(
+                "ERROR AJAX PERIOD:",
+                cursor.strftime("%Y-%m-%d"),
+                "->",
+                period_end.strftime("%Y-%m-%d"),
+                error
+            )
+
+        cursor = (
+            period_end
+            + timedelta(days=1)
+        )
+
+    return deduplicate(
+        all_events
     )
 
 
@@ -877,7 +1281,7 @@ def main():
 
         try:
 
-            events = extract_calendar_page(
+            events = extract_full_competition_calendar(
                 url,
                 forced_competition=comp["id"]
             )
@@ -900,6 +1304,9 @@ def main():
 
     # --------------------------------------------------------
     # 2. GDESSA TEAM CALENDAR
+    #
+    # Keep this as an additional source.
+    # Individual competition pages are now the primary source.
     # --------------------------------------------------------
 
     try:
@@ -999,7 +1406,7 @@ def main():
     )
 
     # --------------------------------------------------------
-    # SAFETY CHECK
+    # 5. SAFETY CHECK
     # --------------------------------------------------------
 
     if not all_events:
@@ -1010,7 +1417,7 @@ def main():
         )
 
     # --------------------------------------------------------
-    # 5. INDIVIDUAL FEEDS
+    # 6. INDIVIDUAL FEEDS
     # --------------------------------------------------------
 
     for comp in active:
@@ -1055,7 +1462,7 @@ def main():
         )
 
     # --------------------------------------------------------
-    # 6. MASTER FEED
+    # 7. MASTER FEED
     # --------------------------------------------------------
 
     master = generate_ics(
