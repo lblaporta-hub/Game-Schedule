@@ -9,20 +9,30 @@ REFRESH-INTERVAL;VALUE=DURATION:P1D
 X-PUBLISHED-TTL:P1D
 BEGIN:VEVENT
 UID:0dd44a19427a2145e9be@gdessa
-DTSTAMP:20260907T090916Z
+DTSTAMP:20260907T091851Z
 DTSTART;TZID=Europe/Lisbon:20260919T113000
 DTEND;TZID=Europe/Lisbon:20260919T133000
-SUMMARY:🚌 GDRAR vs GDESSA Barreiro
+SUMMARY:🚌 GDRAR vs GDESSA Barreiro — 11:30
 LOCATION:Pavilhão EB23 André Resende \,Évora
 DESCRIPTION:GDESSA Barreiro\\nCompetição: Jogos de Preparação\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=415333
 URL:https://www.fpb.pt/ficha-de-jogo?internalID=415333
 END:VEVENT
 BEGIN:VEVENT
+UID:57fd816cf2796bc760b9@gdessa
+DTSTAMP:20260907T091851Z
+DTSTART;TZID=Europe/Lisbon:20260927T160000
+DTEND;TZID=Europe/Lisbon:20260927T180000
+SUMMARY:🚌 SL Benfica vs GDESSA Barreiro — 16:00
+LOCATION:Complexo Municipal Desportos Cidade Almada \,Almada
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Supertaça Feminina\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=414902
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=414902
+END:VEVENT
+BEGIN:VEVENT
 UID:d2b9ff2053b195d0da28@gdessa
-DTSTAMP:20260907T090916Z
+DTSTAMP:20260907T091851Z
 DTSTART;TZID=Europe/Lisbon:20261005T113000
 DTEND;TZID=Europe/Lisbon:20261005T133000
-SUMMARY:🏠 GDESSA Barreiro vs CRC Quinta dos Lombos
+SUMMARY:🏠 GDESSA Barreiro vs CRC Quinta dos Lombos — 11:30
 LOCATION:Pavilhão Municipal Prof Luís de Carvalho \,Cidade Sol - Santo António da Charneca
 DESCRIPTION:GDESSA Barreiro\\nCompetição: Liga Betclic Feminina\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=413957
 URL:https://www.fpb.pt/ficha-de-jogo?internalID=413957
