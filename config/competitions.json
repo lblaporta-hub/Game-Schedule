@@ -56,10 +56,19 @@
         "active": false
       },
       {
-        "id": "sub18",
+        "id": "Nacional-sub18",
         "name": "Campeonato Nacional Sub18 Femininos",
-        "short_name": "Sub18",
-        "emoji": "👧",
+        "short_name": "Nacional Sub18",
+        "emoji": "🏆👧",
+        "source_type": "team",
+        "url": "https://www.fpb.pt/equipa/equipa_63443/",
+        "active": false
+      },
+        {
+        "id": "Distrital-sub18",
+        "name": "Campeonato Nacional Sub18 Femininos",
+        "short_name": "Distrital Sub18",
+        "emoji": "🏀👧",
         "source_type": "team",
         "url": "https://www.fpb.pt/equipa/equipa_63443/",
         "active": true
