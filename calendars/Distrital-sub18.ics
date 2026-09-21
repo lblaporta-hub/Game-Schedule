@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//GDESSA Barreiro//FPB Calendar//PT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:GDESSA Barreiro — Distrital Sub18
+X-WR-TIMEZONE:Europe/Lisbon
+REFRESH-INTERVAL;VALUE=DURATION:P1D
+X-PUBLISHED-TTL:P1D
+BEGIN:VEVENT
+UID:63b54aec066e6e6112ce@gdessa
+DTSTAMP:20260921T124708Z
+DTSTART;TZID=Europe/Lisbon:20261114T163000
+DTEND;TZID=Europe/Lisbon:20261114T183000
+SUMMARY:🚌 Scalipus CS vs GDESSA — 16:30
+LOCATION:Pavilhão Municipal Aranguêz \,Setúbal
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418289
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=418289
+END:VEVENT
+END:VCALENDAR
