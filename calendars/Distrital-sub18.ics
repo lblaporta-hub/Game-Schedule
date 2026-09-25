@@ -8,13 +8,53 @@ X-WR-TIMEZONE:Europe/Lisbon
 REFRESH-INTERVAL;VALUE=DURATION:P1D
 X-PUBLISHED-TTL:P1D
 BEGIN:VEVENT
+UID:ff859ff6250e22481c02@gdessa
+DTSTAMP:20260925T115015Z
+DTSTART;TZID=Europe/Lisbon:20261003T110000
+DTEND;TZID=Europe/Lisbon:20261003T130000
+SUMMARY:🚌 ABC Santo André vs GDESSA — 11:00
+LOCATION:Pavilhão Municipal Padre Amadeu Pinto \,Vila Nova de Santo André
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418275
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=418275
+END:VEVENT
+BEGIN:VEVENT
 UID:63b54aec066e6e6112ce@gdessa
-DTSTAMP:20260924T114514Z
+DTSTAMP:20260925T115015Z
 DTSTART;TZID=Europe/Lisbon:20261114T163000
 DTEND;TZID=Europe/Lisbon:20261114T183000
 SUMMARY:🚌 Scalipus CS vs GDESSA — 16:30
 LOCATION:Pavilhão Municipal Aranguêz \,Setúbal
 DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418289
 URL:https://www.fpb.pt/ficha-de-jogo?internalID=418289
+END:VEVENT
+BEGIN:VEVENT
+UID:35274aaa4f794e01e95c@gdessa
+DTSTAMP:20260925T115015Z
+DTSTART;TZID=Europe/Lisbon:20261201T113000
+DTEND;TZID=Europe/Lisbon:20261201T133000
+SUMMARY:🚌 BAC vs GDESSA — 11:30
+LOCATION:Pavilhão Municipal Costa da Caparica \,Costa da Caparica
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418299
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=418299
+END:VEVENT
+BEGIN:VEVENT
+UID:1d3c053092a8b3ac8141@gdessa
+DTSTAMP:20260925T115015Z
+DTSTART;TZID=Europe/Lisbon:20261212T150000
+DTEND;TZID=Europe/Lisbon:20261212T170000
+SUMMARY:🚌 Assoc Acad Pinhalnovense vs GDESSA — 15:00
+LOCATION:Pavilhão Municipal Palmela \,Palmela
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418306
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=418306
+END:VEVENT
+BEGIN:VEVENT
+UID:5a2f28ca51927ce8e937@gdessa
+DTSTAMP:20260925T115015Z
+DTSTART;TZID=Europe/Lisbon:20270110T113000
+DTEND;TZID=Europe/Lisbon:20270110T133000
+SUMMARY:🚌 Montijo Basket Associação vs GDESSA — 11:30
+LOCATION:Pavilhão Municipal nº 1 do Montijo \,Montijo
+DESCRIPTION:GDESSA Barreiro\\nCompetição: Distrital-sub18\\nÉpoca: 2026/27\\nFPB: https://www.fpb.pt/ficha-de-jogo?internalID=418313
+URL:https://www.fpb.pt/ficha-de-jogo?internalID=418313
 END:VEVENT
 END:VCALENDAR
