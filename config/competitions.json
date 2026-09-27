@@ -43,8 +43,8 @@
         "short_name": "2ª Divisão",
         "emoji": "🏀",
         "source_type": "calendar",
-        "url": "",
-        "active": false
+        "url": "https://www.fpb.pt/calendario/11447/",
+        "active": true
       },
       {
         "id": "taca-portugal",
@@ -52,8 +52,8 @@
         "short_name": "Taça de Portugal",
         "emoji": "🏆",
         "source_type": "calendar",
-        "url": "",
-        "active": false
+        "url": "https://www.fpb.pt/calendario/11449/",
+        "active": true
       },
       {
         "id": "Nacional-sub18",
